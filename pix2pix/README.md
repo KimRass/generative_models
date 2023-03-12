@@ -6,10 +6,22 @@
 - In this paper, we explore GANs in the conditional setting. Just as GANs learn a generative model of data, conditional GANs (cGANs) learn a conditional generative model [24]. This makes cGANs suitable for image-to-image translation tasks, where we condition on an input image and generate a corresponding output image. Our primary contribution is to demonstrate that on a wide variety of problems, conditional GANs produce reasonable results.
 ## Methodology
 - ***Unlike past work, for our generator we use a "U-Net"-based architecture [50], and for our discriminator we use a convolutional "PatchGAN" classifier, which only penalizes structure at the scale of image patches. A similar PatchGAN architecture was previously proposed in to capture local style statistics. Here we show that this approach is effective on a wider range of problems, and we investigate the effect of changing the patch size.***
-- GANs are generative models that learn a mapping from random noise vector $z$ to output image $y$, $G : z → y$ [24]. In contrast, ***conditional GANs learn a mapping from observed image*** $x$ ***and random noise vector*** $z$***, to*** $y$***,*** $G : \{x, z\} → y$***. The generator*** $G$ ***is trained to produce outputs that cannot be distinguished from "real" images by an adversarially trained discriminator,*** $D$***, which is trained to do as well as possible at detecting the generator’s "fakes".***
+- ***GANs are generative models that learn a mapping from random noise vector*** $z$ ***to output image*** $y$***,*** $G : z → y$ ***[24]. In contrast, conditional GANs learn a mapping from observed image*** $x$ ***and random noise vector*** $z$***, to*** $y$***,*** $G : \{x, z\} → y$***. The generator*** $G$ ***is trained to produce outputs that cannot be distinguished from "real" images by an adversarially trained discriminator,*** $D$***, which is trained to do as well as possible at detecting the generator’s "fakes".***
+## Train
+### Loss
 - The objective of a conditional GAN can be expressed as
 $$\mathcal{L}_{cGAN}(G, D) = \mathbb{E}_{x, y}[\log D(x, y)] + \mathbb{E}_{x, z}[\log(1 − D(x, G(x, z)))]$$
 - ***where*** $G$ ***tries to minimize this objective against an adversarial*** $D$ ***that tries to maximize it, i.e.*** $G^{*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D)$***.***
+- To test the importance of conditioning the discriminator, we also compare to an unconditional variant in which the discriminator does not observe x:
+<!-- $$\mathcal{L}_{GAN}(G, D) = \mathbb{E}_{y}[\log D(y)] + \mathbb{E}_{x, z}[\log(1 − D(G(x, z)))]$$ -->
+$$\mathcal{L}_{GAN}(G, D) = \mathbb{E}_{y}[\log D(y)] + \mathbb{E}_{z}[\log(1 − D(G(z)))]$$
+- Previous approaches have found it beneficial to mix the GAN objective with a more traditional loss, such as L2 distance. The discriminator’s job remains unchanged, but ***the generator is tasked to not only fool the discriminator but also to be near the ground truth output in an L2 sense. We also explore this option, using L1 distance rather than L2 as L1 encourages less blurring:***
+$$\mathcal{L}_{L1}(G) = \mathbb{E}_{x, y, z}[\lVert y - G(x, z) \rVert_{1}]$$
+- ***Our final objective is***
+$$G^{*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D) + \lambda\mathcal{L}_{L1}(G)$$
+- Without $z$, the net could still learn a mapping from $x$ to $y$, but would produce deterministic outputs, and therefore fail to match any distribution other than a delta function. Past conditional GANs have acknowledged this and provided Gaussian noise $z$ as an input to the generator, in addition to $x$ (e.g., [55]). In initial experiments, we did not find this strategy effective – the generator simply learned to ignore the noise. Instead, for our final models, we provide noise only in the form of dropout, applied on several layers of our generator at both training and test time. Despite the dropout noise, we observe only minor stochasticity in the output of our nets.
+## Architecture
+- We adapt our generator and discriminator architectures from those in [44]. Both generator and discriminator use modules of the form convolution-BatchNorm-ReLu [29]. Details of the architecture are provided in the supplemental materials online, with key features discussed below.
 ## Related Works
 - Structured loss
     - Conditional GANs instead learn a structured loss.
