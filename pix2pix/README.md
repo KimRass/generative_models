@@ -8,7 +8,7 @@
 - ***Unlike past work, for our generator we use a "U-Net"-based architecture [50], and for our discriminator we use a convolutional "PatchGAN" classifier, which only penalizes structure at the scale of image patches. A similar PatchGAN architecture was previously proposed in to capture local style statistics. Here we show that this approach is effective on a wider range of problems, and we investigate the effect of changing the patch size.***
 - GANs are generative models that learn a mapping from random noise vector $z$ to output image $y$, $G : z → y$ [24]. In contrast, ***conditional GANs learn a mapping from observed image*** $x$ ***and random noise vector*** $z$***, to*** $y$***,*** $G : \{x, z\} → y$***. The generator*** $G$ ***is trained to produce outputs that cannot be distinguished from "real" images by an adversarially trained discriminator,*** $D$***, which is trained to do as well as possible at detecting the generator’s "fakes".***
 - The objective of a conditional GAN can be expressed as
-$$\mathcal{L}__{\text{cGAN}}(G, D) = \mathbb{E}__{x,y}[\log D(x, y)] + \mathbb{E}__{x,z}[log(1 − D(x, G(x, z)))]$$
+$$\mathcal{L}_{cGAN}(G, D) = \mathbb{E}_{x, y}[\log D(x, y)] + \mathbb{E}_{x, z}[\log(1 − D(x, G(x, z)))]$$
 - ***where*** $G$ ***tries to minimize this objective against an adversarial*** $D$ ***that tries to maximize it, i.e.*** $G^{*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D)$***.***
 ## Related Works
 - Structured loss
