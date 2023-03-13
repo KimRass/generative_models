@@ -111,11 +111,11 @@ class Discriminator(nn.Module):
         x = self.sigmoid(x)
         return x
 d = Discriminator(in_ch=3, out_ch=3)
-input = torch.randn((4, 3, 256, 256))
+input = torch.randn((4, 6, 256, 256))
 d(input).shape
 d(input)[0]
 
 cgan_loss = nn.BCELoss()
 l1_loss = nn.L1Loss()
-lam = 100
-loss = cgan_loss + lam * l1_loss
+lamb = 100
+loss = cgan_loss + lamb * l1_loss
