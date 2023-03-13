@@ -7,24 +7,40 @@
 ## Methodology
 - ***Unlike past work, for our generator we use a "U-Net"-based architecture [50], and for our discriminator we use a convolutional "PatchGAN" classifier, which only penalizes structure at the scale of image patches. A similar PatchGAN architecture was previously proposed in to capture local style statistics. Here we show that this approach is effective on a wider range of problems, and we investigate the effect of changing the patch size.***
 - ***GANs are generative models that learn a mapping from random noise vector*** $z$ ***to output image*** $y$***,*** $G : z → y$ ***[24]. In contrast, conditional GANs learn a mapping from observed image*** $x$ ***and random noise vector*** $z$***, to*** $y$***,*** $G : \{x, z\} → y$***. The generator*** $G$ ***is trained to produce outputs that cannot be distinguished from "real" images by an adversarially trained discriminator,*** $D$***, which is trained to do as well as possible at detecting the generator’s "fakes".***
+- Discriminator
+    - ***In order to model high-frequencies, it is sufficient to restrict our attention to the structure in local image patches. Therefore, we design a discriminator architecture – which we term a PatchGAN – that only penalizes structure at the scale of patches. This discriminator tries to classify if each $N \times N$ patch in an image is real or fake. We run this discriminator convolutionally across the image, averaging all responses to provide the ultimate output of $D$.***
+    - We test the effect of varying the patch size N of our discriminator receptive fields, from a 1 × 1 “PixelGAN” to a full 286 × 286 “ImageGAN”. Note that elsewhere in this paper, unless specified, all experiments use 70 × 70 PatchGANs.
 ## Train
 ### Loss
 - The objective of a conditional GAN can be expressed as
 $$\mathcal{L}_{cGAN}(G, D) = \mathbb{E}_{x, y}[\log D(x, y)] + \mathbb{E}_{x, z}[\log(1 − D(x, G(x, z)))]$$
-- ***where*** $G$ ***tries to minimize this objective against an adversarial*** $D$ ***that tries to maximize it, i.e.*** $G^{*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D)$***.***
+- ***where*** $G$ ***tries to minimize this objective against an adversarial*** $D$ ***that tries to maximize it, i.e.*** $G^{\*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D)$***.***
 - To test the importance of conditioning the discriminator, we also compare to an unconditional variant in which the discriminator does not observe x:
 <!-- $$\mathcal{L}_{GAN}(G, D) = \mathbb{E}_{y}[\log D(y)] + \mathbb{E}_{x, z}[\log(1 − D(G(x, z)))]$$ -->
 $$\mathcal{L}_{GAN}(G, D) = \mathbb{E}_{y}[\log D(y)] + \mathbb{E}_{z}[\log(1 − D(G(z)))]$$
 - Previous approaches have found it beneficial to mix the GAN objective with a more traditional loss, such as L2 distance. The discriminator’s job remains unchanged, but ***the generator is tasked to not only fool the discriminator but also to be near the ground truth output in an L2 sense. We also explore this option, using L1 distance rather than L2 as L1 encourages less blurring:***
 $$\mathcal{L}_{L1}(G) = \mathbb{E}_{x, y, z}[\lVert y - G(x, z) \rVert_{1}]$$
 - ***Our final objective is***
-$$G^{*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D) + \lambda\mathcal{L}_{L1}(G)$$
+$$G^{\*} = \arg \min_{G} \max_{D} \mathcal{L}_{cGAN}(G, D) + \lambda\mathcal{L}_{L1}(G)$$
 - Without $z$, the net could still learn a mapping from $x$ to $y$, but would produce deterministic outputs, and therefore fail to match any distribution other than a delta function. Past conditional GANs have acknowledged this and provided Gaussian noise $z$ as an input to the generator, in addition to $x$ (e.g., [55]). In initial experiments, we did not find this strategy effective – the generator simply learned to ignore the noise. Instead, for our final models, we provide noise only in the form of dropout, applied on several layers of our generator at both training and test time. Despite the dropout noise, we observe only minor stochasticity in the output of our nets.
 ## Architecture
-- We adapt our generator and discriminator architectures from those in [44]. Both generator and discriminator use modules of the form convolution-BatchNorm-ReLu [29]. Details of the architecture are provided in the supplemental materials online, with key features discussed below.
+- We adapt our generator and discriminator architectures from those in [44]. Both generator and discriminator use modules of the form convolution-BatchNorm-ReLu [29].
+- Let 'Ck' denote a Convolution-BatchNorm-ReLU layer with k filters. 'CDk' denotes a Convolution-BatchNorm-Dropout-ReLU layer with a dropout rate of 50%. All convolutions are 4 × 4 spatial filters applied with stride 2. Convolutions in the encoder, and in the discriminator, downsample by a factor of 2, whereas in the decoder they upsample by a factor of 2. (Comment: Stride와 동일한 크기의 Padding을 주어야 합니다.)
+- Generator
+    - ***Encoder: C64-C128-C256-C512-C512-C512-C512-C512***
+    - ***Decoder: CD512-CD512-CD512-C512-C256-C128-C64***
+    - ***After the last layer in the decoder, a convolution is applied to map to the number of output channels (3 in general, except in colorization, where it is 2), followed by a Tanh function. As an exception to the above notation, BatchNorm is not applied to the first C64 layer in the encoder. All ReLUs in the encoder are leaky, with slope 0.2, while ReLUs in the decoder are not leaky. The U-Net architecture is identical except with skip connections between each layer $i$ in the encoder and layer $n − i$ in the decoder, where $n$ is the total number of layers. The skip connections concatenate activations from layer $i$ to layer $n − i$.***
+    <!-- - This changes the number of channels in the decoder:
+        - ***U-Net decoder: CD512-CD1024-CD1024-C1024-C1024-C512-C256-C128*** -->
+- Discriminator
+    - The 70 × 70 discriminator: C64-C128-C256-C512
+    - After the last layer, a convolution is applied to map to a 1-dimensional output, followed by a Sigmoid function. As an exception to the above notation, BatchNorm is not applied to the first C64 layer. All ReLUs are leaky, with slope 0.2. All other discriminators follow the same basic architecture, with depth varied to modify the receptive field size
+    <!-- : 1 × 1 discriminator: C64-C128 (note, in this special case, all convolutions are 1 × 1 spatial filters) 16 × 16 discriminator: C64-C128 286 × 286 discriminator: C64-C128-C256-C512-C512-C512 -->
 ## Related Works
 - Structured loss
     - Conditional GANs instead learn a structured loss.
 ## References
 - [24] [Generative Adversarial Nets](https://arxiv.org/pdf/1406.2661.pdf)
+- [29] [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/pdf/1502.03167.pdf)
+- [44] [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/pdf/1511.06434.pdf)
 - [50] [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/pdf/1505.04597.pdf)
