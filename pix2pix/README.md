@@ -13,7 +13,7 @@
     - ***In order to model high-frequencies, it is sufficient to restrict our attention to the structure in local image patches. Therefore, we design a discriminator architecture – which we term a PatchGAN – that only penalizes structure at the scale of patches. This discriminator tries to classify if each $N \times N$ patch in an image is real or fake. We run this discriminator convolutionally across the image, averaging all responses to provide the ultimate output of $D$.***
     - We demonstrate that $N$ can be much smaller than the full size of the image and still produce high quality results. ***This is advantageous because a smaller PatchGAN has fewer parameters, runs faster, and can be applied to arbitrarily large images.*** Such a discriminator effectively models the image as a Markov random field, assuming independence between pixels separated by more than a patch diameter.
     - ***An advantage of the PatchGAN is that a fixed-size patch discriminator can be applied to arbitrarily large images.*** We may also apply the generator convolutionally, ***on larger images than those on which it was trained.***
-## Train
+## Training
 ### Loss
 - The objective of a conditional GAN can be expressed as
 $$\mathcal{L}_{cGAN}(G, D) = \mathbb{E}_{x, y}[\log D(x, y)] + \mathbb{E}_{x, z}[\log(1 − D(x, G(x, z)))]$$
