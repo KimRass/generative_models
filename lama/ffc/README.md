@@ -12,7 +12,7 @@
 - To our best knowledge, ***FFC is the first work that explores an efficient ensemble of local and non-local receptive fields in a single unit. It can be used in a plug-and-play fashion for easily replacing vanilla convolutions in mainstream CNNs without any additional effort. FFC consumes comparable GFLOPs and parameters with respect to vanilla convolutions, yet conveys richer information.***
 ## Architecture
 - Figure 1
-  - <img src="https://user-images.githubusercontent.com/67457712/226341506-103f0897-c3e5-4640-a440-8a151855b7b5.png)" width="700">
+  - <img src="https://user-images.githubusercontent.com/67457712/226341506-103f0897-c3e5-4640-a440-8a151855b7b5.png" width="700">
 - ***Conceptually, FFC is comprised of two inter-connected paths:***
   - ***A spatial (or local) path that conducts ordinary convolutions on a part of input feature channels***
   - ***A spectral (or global) path that operates in the spectral domain.***
