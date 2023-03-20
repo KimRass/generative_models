@@ -1,6 +1,7 @@
 # Paper Summary
 - [Image Style Transfer Using Convolutional Neural Networks](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf)
-- $\vec{a}$ -> $\vec{s}$, $\vec{p}$ -> $\vec{c}$, $A$ -> $G_{s}$, $P$ -> $F_{c}$ $\frac{\alpha}{\beta}$ -> $\lambda$
+- 원본 논문의 수식과 다른 표기를 사용합니다:
+    - $\vec{a}\rightarrow\vec{s}$, $\vec{p} \rightarrow \vec{c}$, $A \rightarrow G_{s}$, $P \rightarrow F_{c}$ and $\frac{\alpha}{\beta} \rightarrow \lambda$
 ## Methodology
 - Figure 1
     - <img src="https://user-images.githubusercontent.com/67457712/226185150-e19f3a4e-457f-4534-94f6-1a080b56528b.png" width="800">
@@ -10,7 +11,7 @@
         - (a ~ c) Reconstructions from the lower layers simply reproduce the exact pixel values of the original image.
         - (d ~ e) In contrast, higher layers in the network capture the high-level content in terms of objects and their arrangement in the input image but do not constrain the exact pixel values of the reconstruction very much. We therefore refer to the feature responses in higher layers of the network as the content representation.
     - Style Reconstructions
-        - The style representation computes correlations between the different features in different layers of the CNN. We reconstruct the style of the input image from a style representation built on different subsets of CNN layers ('conv1 1' (a), 'conv1_1' and 'conv2_1' (b), 'conv1_1', 'conv2_1' and 'conv3_1' (c), 'conv1_1', 'conv2_1', 'conv3_1' and 'conv4_1' (d), 'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1' and 'conv5_1' (e). This creates images that match the style of a given image on an increasing scale while discarding information of the global arrangement of the scene.
+        - The style representation computes correlations between the different features in different layers of the CNN. We reconstruct the style of the input image from a style representation built on different subsets of CNN layers ('conv1 1' (a), 'conv1_1' and 'conv2_1' (b), 'conv1_1', 'conv2_1' and 'conv3_1' (c), 'conv1_1', 'conv2_1', 'conv3_1' and 'conv4_1' (d), 'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1' and 'conv5_1' (e)). This creates images that match the style of a given image on an increasing scale while discarding information of the global arrangement of the scene.
         - We can visualise the information captured by these style feature spaces built on different layers of the network by constructing an image that matches the style representation of a given input image.
     - ***We find that matching the style representations up to higher layers in the network preserves local images structures an increasingly large scale, leading to a smoother and more continuous visual experience.*** Thus, the visually most appealing images are usually created by matching the style representation up to high layers in the network, which is why for all images shown we match the style features in layers 'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1' and 'conv5_1' of the network.
 - Figure 2
