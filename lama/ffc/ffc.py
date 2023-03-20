@@ -1,4 +1,5 @@
 # References
+    # https://medium.com/mlearning-ai/fast-fourier-convolution-a-detailed-view-a5149aae36c4
     # https://github.com/advimman/lama/blob/main/saicinpainting/training/modules/ffc.py
 
 import numpy as np
