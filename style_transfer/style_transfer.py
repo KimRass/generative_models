@@ -129,8 +129,8 @@ def _get_target_layer(layer):
 
 
 if __name__ == "__main__":
-    content_img = load_image("/Users/jongbeomkim/Downloads/download.png")
-    style_img = load_image("/Users/jongbeomkim/Downloads/horses.jpeg")
+    content_img = load_image("D:/golden-retriever-royalty-free-image-506756303-1560962726.jpg")
+    style_img = load_image("D:/stary-night_orig.jpg")
     # input = torch.randn((4, 3, 224, 224))
 
     transform = T.Compose(
@@ -146,10 +146,11 @@ if __name__ == "__main__":
     style_image = transform(style_img).unsqueeze(0)
     gen_image = content_image.clone()
 
-    model = vgg19_bn(style_weights=VGG19_BN_Weights.IMAGENET1K_V1)
+    model = vgg19_bn(weights=VGG19_BN_Weights.IMAGENET1K_V1)
     model.eval()
-    print_layers_information(model)
+    # print_layers_information(model)
 
+    gen_image.requires_grad_()
     optimizer = optim.Adam(params=[gen_image], lr=0.01)
     # content_loss = ContentLoss(model=model, layer="features.40")
     # style_loss = StyleLoss(model=model, weights=(0.2, 0.2, 0.2, 0.2, 0.2), layers=("features.0", "features.7", "features.14", "features.27", "features.40"))
@@ -158,7 +159,6 @@ if __name__ == "__main__":
 
     n_epochs = 300
     for epoch in range(1, n_epochs + 1):
-
         optimizer.zero_grad()
 
         total_loss = TotalLoss(model=model, lamb=500)
