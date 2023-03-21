@@ -181,6 +181,7 @@ def get_arguments():
     parser.add_argument("--content_image")
     parser.add_argument("--style_image")
     parser.add_argument("--save_dir", default="samples")
+    parser.add_argument("--style_weight", type=int, default=1_000)
 
     args = parser.parse_args()
     return args
@@ -192,7 +193,6 @@ if __name__ == "__main__":
     cuda = torch.cuda.is_available()
 
     content_img = load_image(args.content_image)
-    content_img = content_img[:, 300: 1000]
     h, w, _ = content_img.shape
 
     style_img = load_image(args.style_image)
@@ -237,10 +237,9 @@ if __name__ == "__main__":
     feat_map_extractor = FeatureMapExtractor(model)
 
     gen_image.requires_grad_()
-    optimizer = optim.Adam(params=[gen_image], lr=0.01)
+    optimizer = optim.Adam(params=[gen_image], lr=0.03)
 
-    lamb = 500
-    criterion = TotalLoss(model=model, lamb=lamb)
+    criterion = TotalLoss(model=model, lamb=args.sytle_weight)
 
     n_epochs = 30_000
     for epoch in range(1, n_epochs + 1):
@@ -252,10 +251,10 @@ if __name__ == "__main__":
 
         optimizer.step()
         if epoch % 200 == 0:
-            print(f"""| Epoch: {epoch:3d} | Loss: {loss.item(): .2f} |""")
+            print(f"""| Epoch: {epoch:5d} | Loss: {loss.item(): .2f} |""")
 
             gen_img = convert_tensor_to_array(gen_image)
             save_image(
                 img=gen_img,
-                path=Path(args.save_dir)/f"""{Path(args.content_image).stem}_{Path(args.style_image).stem}_lambda{lamb}_epoch{epoch}.jpg"""
+                path=Path(args.save_dir)/f"""{Path(args.content_image).stem}_{Path(args.style_image).stem}_lambda{args.style_weight}_epoch{epoch}.jpg"""
             )
