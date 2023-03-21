@@ -5,4 +5,4 @@ config/
 etc/
 lib/
 lib64
-style_transfer/samples/
+# style_transfer/samples/
