@@ -193,11 +193,10 @@ if __name__ == "__main__":
     cuda = torch.cuda.is_available()
 
     content_img = load_image(args.content_image)
-    h, w, _ = content_img.shape
-
     style_img = load_image(args.style_image)
-
-    gen_img = np.random.randint(low=0, high=256, size=(h, w, 3), dtype="uint8")
+    h, w, _ = content_img.shape
+    # gen_img = np.random.randint(low=0, high=256, size=(h, w, 3), dtype="uint8")
+    gen_img = content_img.copy()
 
     transform1 = T.Compose(
         [
