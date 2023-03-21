@@ -180,6 +180,7 @@ def get_arguments():
 
     parser.add_argument("--content_image")
     parser.add_argument("--style_image")
+    parser.add_argument("--save_dir")
 
     args = parser.parse_args()
     return args
@@ -253,4 +254,4 @@ if __name__ == "__main__":
             print(f"""| Epoch: {epoch:3d} | Loss: {loss.item(): .2f} |""")
 
             gen_img = convert_tensor_to_array(gen_image)
-            save_image(img=gen_img, path="/samples/sample1.jpg")            
+            save_image(img=gen_img, path=Path(args.save_dir)/"sample1.jpg")            
