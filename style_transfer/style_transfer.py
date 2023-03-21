@@ -166,6 +166,10 @@ def load_image(url_or_path=""):
     return img
 
 
+def _downsample_image(img):
+    return cv2.pyrDown(img)
+
+
 def save_image(img, path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -193,10 +197,12 @@ if __name__ == "__main__":
     cuda = torch.cuda.is_available()
 
     content_img = load_image(args.content_image)
+    content_img = _downsample_image(content_img)
     style_img = load_image(args.style_image)
     h, w, _ = content_img.shape
     # gen_img = np.random.randint(low=0, high=256, size=(h, w, 3), dtype="uint8")
     gen_img = content_img.copy()
+
 
     transform1 = T.Compose(
         [
