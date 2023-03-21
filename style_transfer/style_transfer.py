@@ -180,7 +180,7 @@ def get_arguments():
 
     parser.add_argument("--content_image")
     parser.add_argument("--style_image")
-    parser.add_argument("--save_dir")
+    parser.add_argument("--save_dir", default="samples")
 
     args = parser.parse_args()
     return args
@@ -239,7 +239,8 @@ if __name__ == "__main__":
     gen_image.requires_grad_()
     optimizer = optim.Adam(params=[gen_image], lr=0.01)
 
-    criterion = TotalLoss(model=model, lamb=500)
+    lamb = 500
+    criterion = TotalLoss(model=model, lamb=lamb)
 
     n_epochs = 3000
     for epoch in range(1, n_epochs + 1):
@@ -254,4 +255,7 @@ if __name__ == "__main__":
             print(f"""| Epoch: {epoch:3d} | Loss: {loss.item(): .2f} |""")
 
             gen_img = convert_tensor_to_array(gen_image)
-            save_image(img=gen_img, path=Path(args.save_dir)/"sample1.jpg")            
+            save_image(
+                img=gen_img,
+                path=Path(args.save_dir)/f"""{Path(args.content_image).stem}_{Path(args.style_image).stem}_lambda{lamb}_epoch{epoch}.jpg"""
+            )

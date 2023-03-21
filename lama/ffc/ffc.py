@@ -12,7 +12,6 @@ class SpectralTransformer(nn.Module):
     def __init__(self, in_ch, out_ch, stride=1, groups=1, enable_lfu=True, **fu_kwargs):
         # bn_layer not used
         super().__init__()
-        self.enable_lfu = enable_lfu
         if stride == 2:
             self.downsample = nn.AvgPool2d(kernel_size=(2, 2), stride=2)
         else:
@@ -25,7 +24,6 @@ class SpectralTransformer(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.fu = FourierUnit(out_ch // 2, out_ch // 2, groups, **fu_kwargs)
-        # if self.enable_lfu:
         self.lfu = FourierUnit(out_ch // 2, out_ch // 2, groups)
         self.conv2 = nn.Conv2d(out_ch // 2, out_ch, kernel_size=1, groups=groups, bias=False)
 
@@ -34,18 +32,15 @@ class SpectralTransformer(nn.Module):
         x = self.conv1(x)
         output = self.fu(x)
 
-        if self.enable_lfu:
-            n, c, h, w = x.shape
-            split_no = 2
-            split_s = h // 2
-            xs = torch.cat(
-                torch.split(x[:, : c // 4], split_s, dim=-2), dim=1).contiguous()
-            xs = torch.cat(torch.split(xs, split_s, dim=-1),
-                           dim=1).contiguous()
-            xs = self.lfu(xs)
-            xs = xs.repeat(1, 1, split_no, split_no).contiguous()
-        else:
-            xs = 0
+        n, c, h, w = x.shape
+        split_no = 2
+        split_s = h // 2
+        xs = torch.cat(
+            torch.split(x[:, : c // 4], split_s, dim=-2), dim=1).contiguous()
+        xs = torch.cat(torch.split(xs, split_s, dim=-1),
+                        dim=1).contiguous()
+        xs = self.lfu(xs)
+        xs = xs.repeat(1, 1, split_no, split_no).contiguous()
 
         output = self.conv2(x + output + xs)
         return output
