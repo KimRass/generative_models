@@ -238,7 +238,7 @@ if __name__ == "__main__":
     gen_image.requires_grad_()
     optimizer = optim.Adam(params=[gen_image], lr=0.03)
 
-    criterion = TotalLoss(model=model, lamb=args.sytle_weight)
+    criterion = TotalLoss(model=model, lamb=args.style_weight)
 
     n_epochs = 30_000
     for epoch in range(1, n_epochs + 1):
