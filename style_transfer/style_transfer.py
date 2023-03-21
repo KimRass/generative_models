@@ -2,6 +2,10 @@
     # https://github.com/Aleadinglight/Pytorch-VGG-19/blob/master/VGG_19.ipynb
     # https://deep-learning-study.tistory.com/680?category=983681
 
+from pathlib import Path
+import requests
+import cv2
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -32,14 +36,14 @@ class ContentLoss(nn.Module):
     def __init__(self, model, layer):
         super().__init__()
 
+        self.model = model
         self.layer = layer
 
-        self.feat_map_extractor = FeatureMapExtractor(model)
+        self.content_feat_map = FeatureMapExtractor(model).get_feature_map(image=content_image, layer=layer)
 
-    def forward(self, gen_image, content_image):
-        feat_map_gen = self.feat_map_extractor.get_feature_map(image=gen_image, layer=self.layer)
-        feat_map_content = self.feat_map_extractor.get_feature_map(image=content_image, layer=self.layer)
-        x = F.mse_loss(feat_map_gen, feat_map_content, reduction="sum")
+    def forward(self, gen_image):
+        gen_feat_map = FeatureMapExtractor(self.model).get_feature_map(image=gen_image, layer=self.layer)
+        x = F.mse_loss(gen_feat_map, self.content_feat_map, reduction="sum")
         x /= 2
         return x
 
@@ -65,17 +69,19 @@ class StyleLoss(nn.Module):
     def __init__(self, model, weights, layers):
         super().__init__()
 
+        self.model = model
         self.weights = weights
         self.layers = layers
 
-        self.feat_map_extractor = FeatureMapExtractor(model)
+        self.style_feat_maps = [
+            FeatureMapExtractor(model).get_feature_map(image=style_image, layer=layer) for layer in self.layers
+        ]
 
-    def forward(self, gen_image, style_image):
+    def forward(self, gen_image):
         x = 0
-        for weight, layer in zip(self.weights, self.layers):
-            feat_map_gen = self.feat_map_extractor.get_feature_map(image=gen_image, layer=layer)
-            feat_map_style = self.feat_map_extractor.get_feature_map(image=style_image, layer=layer)
-            contrib = _get_contribution_of_layer(feat_map1=feat_map_gen, feat_map2=feat_map_style)
+        for weight, layer, style_feat_map in zip(self.weights, self.layers, self.style_feat_maps):
+            gen_feat_map = FeatureMapExtractor(self.model).get_feature_map(image=gen_image, layer=layer)
+            contrib = _get_contribution_of_layer(feat_map1=gen_feat_map, feat_map2=style_feat_map)
             x += weight * contrib
         return x
 
@@ -91,6 +97,7 @@ class TotalLoss(nn.Module):
     ):
         super().__init__()
 
+        self.model = model
         self.content_layer = content_layer
         self.style_weights = style_weights
         self.style_layers = style_layers
@@ -99,14 +106,14 @@ class TotalLoss(nn.Module):
         self.content_loss = ContentLoss(model=model, layer=content_layer)
         self.style_loss = StyleLoss(model=model, weights=style_weights, layers=style_layers)
     
-    def forward(self, gen_image, content_image, style_image):
+    def forward(self, gen_image):
         assert (
             gen_image.shape[0] == 1 and content_image.shape[0] == 1 and style_image.shape[0] == 1,
-            "Each batch size should be 1!"
+            "The batch size should be 1!"
         )
 
-        x1 = self.content_loss(gen_image=gen_image, content_image=content_image)
-        x2 = self.style_loss(gen_image=gen_image, style_image=style_image)
+        x1 = self.content_loss(gen_image)
+        x2 = self.style_loss(gen_image)
         x = x1 + self.lamb * x2
         return x
 
@@ -128,43 +135,101 @@ def _get_target_layer(layer):
     )
 
 
-if __name__ == "__main__":
-    content_img = load_image("D:/golden-retriever-royalty-free-image-506756303-1560962726.jpg")
-    style_img = load_image("D:/stary-night_orig.jpg")
-    # input = torch.randn((4, 3, 224, 224))
+def denormalize_array(img, mean=(0.485, 0.456, 0.406), variance=(0.229, 0.224, 0.225)):
+    copied_img = img.copy()
+    copied_img *= variance
+    copied_img += mean
+    copied_img *= 255.0
+    copied_img = np.clip(a=copied_img, a_min=0, a_max=255).astype("uint8")
+    return copied_img
 
-    transform = T.Compose(
+
+def convert_tensor_to_array(tensor):
+    copied_tensor = tensor.clone().squeeze().permute((1, 2, 0)).detach().cpu().numpy()
+    copied_tensor = denormalize_array(copied_tensor)
+    return copied_tensor
+
+
+def load_image(url_or_path=""):
+    url_or_path = str(url_or_path)
+
+    if "http" in url_or_path:
+        img_arr = np.asarray(
+            bytearray(requests.get(url_or_path).content), dtype="uint8"
+        )
+        img = cv2.imdecode(img_arr, flags=cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
+    else:
+        img = cv2.imread(url_or_path, flags=cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
+    return img
+
+
+def save_image(img) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    cv2.imwrite(
+        filename=str(path), img=gen_img[:, :, :: -1], params=[cv2.IMWRITE_JPEG_QUALITY, 100]
+    )
+
+
+if __name__ == "__main__":
+    content_img = load_image("https://hips.hearstapps.com/hmg-prod/images/golden-retriever-royalty-free-image-506756303-1560962726.jpg?crop=1.00xw:0.756xh;0,0.0756xh&resize=1200:*")
+    content_img = content_img[:, 300: 1000]
+    h, w, _ = content_img.shape
+
+    style_img = load_image("https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1513px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg")
+
+    gen_img = np.random.randint(low=0, high=256, size=(h, w, 3), dtype="uint8")
+
+    transform1 = T.Compose(
         [
             T.ToTensor(),
+            # T.CenterCrop(224),
             T.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225]
             )
         ]
     )
-    content_image = transform(content_img).unsqueeze(0)
-    style_image = transform(style_img).unsqueeze(0)
-    gen_image = content_image.clone()
+    transform2 = T.Compose(
+        [
+            T.ToTensor(),
+            T.Resize((h, w)),
+            T.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ]
+    )
+    content_image = transform1(content_img).unsqueeze(0)
+    style_image = transform2(style_img).unsqueeze(0)
+    gen_image = transform1(gen_img).unsqueeze(0)
+    # temp = convert_tensor_to_array(gen_image)
+    # show_image(temp)
 
     model = vgg19_bn(weights=VGG19_BN_Weights.IMAGENET1K_V1)
     model.eval()
-    # print_layers_information(model)
+
+    feat_map_extractor = FeatureMapExtractor(model)
 
     gen_image.requires_grad_()
     optimizer = optim.Adam(params=[gen_image], lr=0.01)
-    # content_loss = ContentLoss(model=model, layer="features.40")
-    # style_loss = StyleLoss(model=model, weights=(0.2, 0.2, 0.2, 0.2, 0.2), layers=("features.0", "features.7", "features.14", "features.27", "features.40"))
-    # content_loss(gen_image=gen_image, content_image=content_image)
-    # style_loss(gen_image=gen_image, style_image=style_image)
 
-    n_epochs = 300
+    criterion = TotalLoss(model=model, lamb=500)
+
+    n_epochs = 3000
     for epoch in range(1, n_epochs + 1):
         optimizer.zero_grad()
 
-        total_loss = TotalLoss(model=model, lamb=500)
-        loss = total_loss(gen_image=gen_image, content_image=content_image, style_image=style_image)
+        loss = criterion(gen_image)
 
-        loss.backward()
-        print(loss.item())
+        loss.backward(retain_graph=True)
 
         optimizer.step()
+        if epoch % 200 == 0:
+            print(f"""| Epoch: {epoch:3d} | Loss: {loss.item(): .2f} |""")
+
+            gen_img = convert_tensor_to_array(gen_image)
+            save_image(img=gen_img, path="./samples/sample1.jpg")            

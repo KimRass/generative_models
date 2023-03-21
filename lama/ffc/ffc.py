@@ -37,9 +37,9 @@ class SpectralTransformer(nn.Module):
         if self.enable_lfu:
             n, c, h, w = x.shape
             split_no = 2
-            split_s = h // split_no
-            xs = torch.cat(torch.split(
-                x[:, :c // 4], split_s, dim=-2), dim=1).contiguous()
+            split_s = h // 2
+            xs = torch.cat(
+                torch.split(x[:, : c // 4], split_s, dim=-2), dim=1).contiguous()
             xs = torch.cat(torch.split(xs, split_s, dim=-1),
                            dim=1).contiguous()
             xs = self.lfu(xs)
