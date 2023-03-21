@@ -188,6 +188,8 @@ def get_arguments():
 if __name__ == "__main__":
     args = get_arguments()
 
+    cuda = torch.cuda.is_available()
+
     content_img = load_image(args.content_image)
     content_img = content_img[:, 300: 1000]
     h, w, _ = content_img.shape
@@ -219,11 +221,17 @@ if __name__ == "__main__":
     content_image = transform1(content_img).unsqueeze(0)
     style_image = transform2(style_img).unsqueeze(0)
     gen_image = transform1(gen_img).unsqueeze(0)
+    if cuda:
+        content_image = content_image.cuda()
+        style_image = style_image.cuda()
+        gen_image = gen_image.cuda()
     # temp = convert_tensor_to_array(gen_image)
     # show_image(temp)
 
     model = vgg19_bn(weights=VGG19_BN_Weights.IMAGENET1K_V1)
     model.eval()
+    if cuda:
+        model = model.cuda()
 
     feat_map_extractor = FeatureMapExtractor(model)
 
