@@ -179,6 +179,7 @@ def get_arguments():
     parser = argparse.ArgumentParser(description="train_craft")
 
     parser.add_argument("--content_image")
+    parser.add_argument("--style_image")
 
     args = parser.parse_args()
     return args
@@ -191,7 +192,7 @@ if __name__ == "__main__":
     content_img = content_img[:, 300: 1000]
     h, w, _ = content_img.shape
 
-    style_img = load_image("https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1513px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg")
+    style_img = load_image(args.style_image)
 
     gen_img = np.random.randint(low=0, high=256, size=(h, w, 3), dtype="uint8")
 
