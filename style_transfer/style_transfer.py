@@ -2,6 +2,7 @@
     # https://github.com/Aleadinglight/Pytorch-VGG-19/blob/master/VGG_19.ipynb
     # https://deep-learning-study.tistory.com/680?category=983681
 
+import argparse
 from pathlib import Path
 import requests
 import cv2
@@ -174,8 +175,19 @@ def save_image(img) -> None:
     )
 
 
+def get_arguments():
+    parser = argparse.ArgumentParser(description="train_craft")
+
+    parser.add_argument("--content_image")
+
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
-    content_img = load_image("https://hips.hearstapps.com/hmg-prod/images/golden-retriever-royalty-free-image-506756303-1560962726.jpg?crop=1.00xw:0.756xh;0,0.0756xh&resize=1200:*")
+    args = get_arguments()
+
+    content_img = load_image(args.content_image)
     content_img = content_img[:, 300: 1000]
     h, w, _ = content_img.shape
 
@@ -232,4 +244,4 @@ if __name__ == "__main__":
             print(f"""| Epoch: {epoch:3d} | Loss: {loss.item(): .2f} |""")
 
             gen_img = convert_tensor_to_array(gen_image)
-            save_image(img=gen_img, path="./samples/sample1.jpg")            
+            save_image(img=gen_img, path="/samples/sample1.jpg")            
