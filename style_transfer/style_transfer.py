@@ -166,12 +166,12 @@ def load_image(url_or_path=""):
     return img
 
 
-def save_image(img) -> None:
+def save_image(img, path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
     cv2.imwrite(
-        filename=str(path), img=gen_img[:, :, :: -1], params=[cv2.IMWRITE_JPEG_QUALITY, 100]
+        filename=str(path), img=img[:, :, :: -1], params=[cv2.IMWRITE_JPEG_QUALITY, 100]
     )
 
 
