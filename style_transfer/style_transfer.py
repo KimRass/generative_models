@@ -242,7 +242,7 @@ if __name__ == "__main__":
     lamb = 500
     criterion = TotalLoss(model=model, lamb=lamb)
 
-    n_epochs = 3000
+    n_epochs = 30_000
     for epoch in range(1, n_epochs + 1):
         optimizer.zero_grad()
 
