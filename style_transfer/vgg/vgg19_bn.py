@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as T
-from torchvision.models import vgg19_bn
 
 
 class ConvolutionBlock(nn.Module):
