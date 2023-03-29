@@ -16,6 +16,14 @@ import torchvision.transforms as T
 from torchvision.models import vgg19_bn, VGG19_BN_Weights
 
 
+def _get_target_layer(layer):
+    return eval(
+        "model" + "".join(
+            [f"""[{i}]""" if i.isdigit() else f""".{i}""" for i in layer.split(".")]
+        )
+    )
+
+
 class FeatureMapExtractor():
     def __init__(self, model):
         self.model = model
@@ -126,14 +134,6 @@ def print_layers_information(model):
             (nn.Linear, nn.Conv2d, nn.MaxPool2d, nn.AdaptiveMaxPool2d, nn.ReLU)
         ):
             print(f"""| {name:20s}: {str(type(module)):50s} |""")
-
-
-def _get_target_layer(layer):
-    return eval(
-        "model" + "".join(
-            [f"""[{i}]""" if i.isdigit() else f""".{i}""" for i in layer.split(".")]
-        )
-    )
 
 
 def denormalize_array(img, mean=(0.485, 0.456, 0.406), variance=(0.229, 0.224, 0.225)):
