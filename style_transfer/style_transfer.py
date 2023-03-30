@@ -127,7 +127,7 @@ class TotalLoss(nn.Module):
         return x
 
 
-def print_layers_information(model):
+def print_all_layers(model):
     for name, module in model.named_modules():
         if isinstance(
             module,
