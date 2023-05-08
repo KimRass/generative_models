@@ -1,5 +1,3 @@
-- Official repository: [LaMa: Resolution-robust Large Mask Inpainting with Fourier Convolutions](https://github.com/saic-mdal/lama)
-
 # Paper Summary
 - [Resolution-robust Large Mask Inpainting with Fourier Convolutions](https://arxiv.org/pdf/2109.07161.pdf)
 ## Related Works
@@ -71,3 +69,6 @@ if on_pred:
 - Big LaMa-Fourier
   - Big LaMa-Fourier differs from LaMa-Fourier in three aspects:
     - The depth of the generator; It has 18 residual blocks, all based on FFC, resulting in 51M parameters.
+
+# Official Repository
+- [LaMa: Resolution-robust Large Mask Inpainting with Fourier Convolutions](https://github.com/saic-mdal/lama)
