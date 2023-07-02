@@ -1,4 +1,5 @@
-# References: https://deep-learning-study.tistory.com/646, https://www.tensorflow.org/tutorials/generative/pix2pix
+# References:
+#   https://deep-learning-study.tistory.com/646, https://www.tensorflow.org/tutorials/generative/pix2pix
 
 import torch
 import torch.nn as nn
@@ -41,23 +42,53 @@ class Generator(nn.Module):
         super().__init__()
 
         # C64-C128-C256-C512-C512-C512-C512-C512
-        self.layer1 = ConvolutionBlock(in_ch=in_ch, out_ch=64, upsample=False, dropout=False, batchnorm=False, leaky=True)
-        self.layer2 = ConvolutionBlock(in_ch=64, out_ch=128, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer3 = ConvolutionBlock(in_ch=128, out_ch=256, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer4 = ConvolutionBlock(in_ch=256, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer5 = ConvolutionBlock(in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer6 = ConvolutionBlock(in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer7 = ConvolutionBlock(in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer8 = ConvolutionBlock(in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True)
+        self.layer1 = ConvolutionBlock(
+            in_ch=in_ch, out_ch=64, upsample=False, dropout=False, batchnorm=False, leaky=True
+        )
+        self.layer2 = ConvolutionBlock(
+            in_ch=64, out_ch=128, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer3 = ConvolutionBlock(
+            in_ch=128, out_ch=256, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer4 = ConvolutionBlock(
+            in_ch=256, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer5 = ConvolutionBlock(
+            in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer6 = ConvolutionBlock(
+            in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer7 = ConvolutionBlock(
+            in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer8 = ConvolutionBlock(
+            in_ch=512, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
 
         # CD512-CD512-CD512-C512-C256-C128-C64
-        self.layer9 = ConvolutionBlock(in_ch=512, out_ch=512, upsample=True, dropout=True, batchnorm=True, leaky=False)
-        self.layer10 = ConvolutionBlock(in_ch=1024, out_ch=512, upsample=True, dropout=True, batchnorm=True, leaky=False)
-        self.layer11 = ConvolutionBlock(in_ch=1024, out_ch=512, upsample=True, dropout=True, batchnorm=True, leaky=False)
-        self.layer12 = ConvolutionBlock(in_ch=1024, out_ch=512, upsample=True, dropout=False, batchnorm=True, leaky=False)
-        self.layer13 = ConvolutionBlock(in_ch=1024, out_ch=256, upsample=True, dropout=False, batchnorm=True, leaky=False)
-        self.layer14 = ConvolutionBlock(in_ch=512, out_ch=128, upsample=True, dropout=False, batchnorm=True, leaky=False)
-        self.layer15 = ConvolutionBlock(in_ch=256, out_ch=64, upsample=True, dropout=False, batchnorm=False, leaky=False)
+        self.layer9 = ConvolutionBlock(
+            in_ch=512, out_ch=512, upsample=True, dropout=True, batchnorm=True, leaky=False
+        )
+        self.layer10 = ConvolutionBlock(
+            in_ch=1024, out_ch=512, upsample=True, dropout=True, batchnorm=True, leaky=False
+        )
+        self.layer11 = ConvolutionBlock(
+            in_ch=1024, out_ch=512, upsample=True, dropout=True, batchnorm=True, leaky=False
+        )
+        self.layer12 = ConvolutionBlock(
+            in_ch=1024, out_ch=512, upsample=True, dropout=False, batchnorm=True, leaky=False
+        )
+        self.layer13 = ConvolutionBlock(
+            in_ch=1024, out_ch=256, upsample=True, dropout=False, batchnorm=True, leaky=False
+        )
+        self.layer14 = ConvolutionBlock(
+            in_ch=512, out_ch=128, upsample=True, dropout=False, batchnorm=True, leaky=False
+        )
+        self.layer15 = ConvolutionBlock(
+            in_ch=256, out_ch=64, upsample=True, dropout=False, batchnorm=False, leaky=False
+        )
 
         self.last_conv = nn.ConvTranspose2d(128, out_ch, kernel_size=4, stride=2, padding=1)
         self.tanh = nn.Tanh()
@@ -91,10 +122,18 @@ class Discriminator(nn.Module):
         super().__init__()
 
         # C64-C128-C256-C512
-        self.layer1 = ConvolutionBlock(in_ch=in_ch, out_ch=64, upsample=False, dropout=False, batchnorm=False, leaky=True)
-        self.layer2 = ConvolutionBlock(in_ch=64, out_ch=128, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer3 = ConvolutionBlock(in_ch=128, out_ch=256, upsample=False, dropout=False, batchnorm=True, leaky=True)
-        self.layer4 = ConvolutionBlock(in_ch=256, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True)
+        self.layer1 = ConvolutionBlock(
+            in_ch=in_ch, out_ch=64, upsample=False, dropout=False, batchnorm=False, leaky=True
+        )
+        self.layer2 = ConvolutionBlock(
+            in_ch=64, out_ch=128, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer3 = ConvolutionBlock(
+            in_ch=128, out_ch=256, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
+        self.layer4 = ConvolutionBlock(
+            in_ch=256, out_ch=512, upsample=False, dropout=False, batchnorm=True, leaky=True
+        )
 
         self.patch = nn.Conv2d(512, 1, kernel_size=1, stride=1)
         self.sigmoid = nn.Sigmoid()
