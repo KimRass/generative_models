@@ -4,10 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .models import (
-    Generator,
-    Discriminator
-)
+from pix2pix.models import Generator, Discriminator
 
 
 if __name__ == "__main__":
