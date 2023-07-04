@@ -40,7 +40,7 @@ def sample_from_p(xt, t):
     alpha_t = torch.gather(alpha, dim=0, index=t) # $\alpha_{t}$
     alpha_bar_t = torch.gather(alpha_bar, dim=0, index=t) # $\bar{\alpha_{t}}$
     beta_t = torch.gather(beta, dim=0, index=t) # $\beta_{t}$
-    # $$\frac{1}{\sqrt{\alpha_{t}}}\Big(x_{t} - \frac{\beta_{t}}{\sqrt{1 - \bar{\alpha_{t}}}}\epsilon_{\theta}(x_{t}, t)\Big)$$
+    # $\frac{1}{\sqrt{\alpha_{t}}}\Big(x_{t} - \frac{\beta_{t}}{\sqrt{1 - \bar{\alpha_{t}}}}\epsilon_{\theta}(x_{t}, t)\Big)$
     mean = (1 / alpha_t ** 0.5) * (xt - beta_t / ((1 - alpha_bar_t) ** 0.5) * eps_theta_model(xt, t))
 
     sigma_square_t = torch.gather(sigma_square, dim=0, index=t) # $\sigma_{t}^{2}\mathbf{I}$
